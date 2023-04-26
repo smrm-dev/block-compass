@@ -1,0 +1,4 @@
+include block_compass/schema.sql
+graft block_compass/static
+graft block_compass/templates
+global-exclude *.pyc

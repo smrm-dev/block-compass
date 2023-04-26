@@ -1,0 +1,13 @@
+[project]
+name = "block_compass"
+version = "0.0.1"
+dependencies = [
+    "flask",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+block_compass = "block_compass:cli"
