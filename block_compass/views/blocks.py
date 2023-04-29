@@ -3,7 +3,7 @@ from flask import request, jsonify, json
 
 from traceback import print_exc
 
-from block_compass.db import get_block_by_timestamp
+from block_compass.db import get_block_by_timestamp, get_chains
 
 
 class Blocks(MethodView):
@@ -15,8 +15,7 @@ class Blocks(MethodView):
             chain_ids = params.get('chain_ids')
 
             if chain_ids is None:
-                ## TODO: should get all supported chains
-                chain_ids = [1] 
+                chain_ids = [chain['id'] for chain in get_chains()]
             else:
                 chain_ids = json.loads(chain_ids)
 
