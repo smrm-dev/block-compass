@@ -16,3 +16,8 @@ def get_db():
 
 # Use LocalProxy to read the global db instance with just `db`
 db = LocalProxy(get_db)
+
+
+def get_block_by_timestamp(timestamp, chain_id):
+    result = db.blocks.find_one_or_404({'timestamp': {'$lte': timestamp}, 'chainId': chain_id}, projection={'_id' : False}) 
+    return result 
