@@ -17,10 +17,20 @@ def get_db():
 # Use LocalProxy to read the global db instance with just `db`
 db = LocalProxy(get_db)
 
+def init_db():
+    return
+
+def insert_block(block, chain_id):
+    db.blocks.insert_one({
+        'number': block['number'],
+        'timestamp': block['timestamp'],
+        'chainId': chain_id,
+    })
+
 def get_chains():
     result = db.chains.find()
-    return result
+    return list(result)
 
 def get_block_by_timestamp(timestamp, chain_id):
     result = db.blocks.find_one_or_404({'timestamp': {'$lte': timestamp}, 'chainId': chain_id}, projection={'_id' : False}) 
-    return result 
+    return result
