@@ -1,10 +1,13 @@
 from threading import Thread
+from time import sleep
+from traceback import print_exc
 
 
 from web3 import Web3, EthereumTesterProvider
 from flask import (
     current_app, Blueprint, flash, g, redirect, render_template, request, session, url_for
 )
+
 
 from ..views import Blocks
 from ..db import get_chains, insert_block, init_db
@@ -38,8 +41,18 @@ def monitor_chain(app, chain):
 @blocks_blueprint.cli.command('monitor')
 def monitor():
     chains = get_chains()
+    threads = []
     for chain in chains:
-        thread = Thread(target=monitor_chain, args=(current_app._get_current_object(), chain,)) 
+        thread = Thread(target=monitor_chain, args=(current_app._get_current_object(), chain,), name=chain['name']) 
         thread.start()
-    print('Monitoring chains: ', [chain['name'] for chain in chains])
+        threads.append(thread)
+    
+    GREEN = '\033[92m'
+    RED = '\033[91m'
+    ENDC = '\033[0m'
+    prettify = lambda cond, text : GREEN + text + ENDC if cond else RED + text + ENDC 
+
+    while True: 
+        print('Monitoring chains: ', *[prettify(thread.is_alive(), thread.name) for thread in threads], end='\r') 
+        sleep(1) 
     
