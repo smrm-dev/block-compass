@@ -25,9 +25,15 @@ def monitor_chain(app, chain):
         while True:
             new_blocks = new_block_filter.get_new_entries()
             for block_hash in new_blocks:
-                block = w3.eth.get_block(block_hash)
-                insert_block(block, chain['id'])
-    return 
+                while True:
+                    try:
+                        block = w3.eth.get_block(block_hash)
+                        insert_block(block, chain['id'])
+                        break
+                    except:
+                        print('********************', chain['name'], '********************')
+                        print_exc()
+                        sleep(1)
 
 @blocks_blueprint.cli.command('monitor')
 def monitor():
