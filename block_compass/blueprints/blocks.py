@@ -40,6 +40,7 @@ def monitor_chain(app, chain):
                         print('********************', chain['name'], '********************')
                         print_exc()
                         sleep(1)
+            sleep(chain['blockTime'])
 
 @blocks_blueprint.cli.command('monitor')
 def monitor():
