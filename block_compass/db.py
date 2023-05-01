@@ -20,6 +20,13 @@ db = LocalProxy(get_db)
 def init_db():
     return
 
+def save_monitor_log(start_time, block_number, chain_id):
+    db.logs.update_one(
+        filter= { 'startTime': start_time },
+        update= { '$set': {'toBlock': block_number, 'chainId': chain_id }},
+        upsert= True
+    )
+
 def insert_block(block, chain_id):
     db.blocks.insert_one({
         'number': block['number'],

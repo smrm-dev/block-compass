@@ -1,6 +1,7 @@
 from threading import Thread
 from time import sleep
 from traceback import print_exc
+from datetime import datetime
 
 
 from web3 import Web3, EthereumTesterProvider
@@ -10,7 +11,7 @@ from flask import (
 
 
 from ..views import Blocks
-from ..db import get_chains, insert_block, init_db
+from ..db import get_chains, insert_block, save_monitor_log 
 
 blocks_blueprint = Blueprint('blocks', __name__)
 blocks_blueprint.add_url_rule('/blocks', view_func=Blocks.as_view('Blocks'))
@@ -23,6 +24,7 @@ def sync():
 
 def monitor_chain(app, chain):
     with app.app_context():
+        start_time = datetime.now()
         w3 = Web3(Web3.HTTPProvider(chain['rpc']))
         new_block_filter = w3.eth.filter('latest')
         while True:
@@ -32,6 +34,7 @@ def monitor_chain(app, chain):
                     try:
                         block = w3.eth.get_block(block_hash)
                         insert_block(block, chain['id'])
+                        save_monitor_log(start_time, block['number'], chain['id'])
                         break
                     except:
                         print('********************', chain['name'], '********************')
