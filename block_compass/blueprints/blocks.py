@@ -16,6 +16,26 @@ from ..db import get_chains, insert_block, save_monitor_log
 blocks_blueprint = Blueprint('blocks', __name__)
 blocks_blueprint.add_url_rule('/blocks', view_func=Blocks.as_view('Blocks'))
 
+def sync_chain(app, chain):
+    with app.app_context():
+
+        sync_logs = get_sync_logs(chain['chainId'])
+        monitor_logs = get_monitor_logs(chain['chainId'])
+
+        # no sync log
+        if sync_logs == []:
+            latest_block = w3.eth.get_block_number
+            if monitor_logs == []:
+                # sync to lastest block
+                sync_to_block(chain, 0, latest_block)
+            else:
+                # sync to first inserted block
+                sync_to_block(chain, 0)
+                # then fill the gap if exist
+                sync_gaps(monitor_logs)
+
+        print(f'{chain["name"]} synced!')
+
 
 @blocks_blueprint.cli.command('sync')
 def sync():
