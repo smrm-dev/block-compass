@@ -20,20 +20,24 @@ blocks_blueprint.add_url_rule('/blocks', view_func=Blocks.as_view('Blocks'))
 def sync_chain(app, chain):
     with app.app_context():
 
-        sync_logs = get_sync_logs(chain['chainId'])
-        monitor_logs = get_monitor_logs(chain['chainId'])
+        sync_log = get_sync_logs(chain['id'])
+        monitor_logs = get_monitor_logs(chain['id'])
 
-        # no sync log
-        if sync_logs == []:
-            latest_block = w3.eth.get_block_number
-            if monitor_logs == []:
-                # sync to lastest block
-                sync_to_block(chain, 0, latest_block)
-            else:
-                # sync to first inserted block
-                sync_to_block(chain, 0)
-                # then fill the gap if exist
-                sync_gaps(monitor_logs)
+        w3 = Web3(Web3.HTTPProvider(chain['rpc']))
+
+        if sync_log:
+            start = sync_log['toBlock'] + 1
+        else:
+            start = 0
+
+        if monitor_logs == []:
+            end = latest_block = w3.eth.get_block_number
+        else:
+            first_log = monitor_logs[0]
+            end = first_log['toBlock'] - first_log['numBlocks'] + 1
+            sync_gaps(monitor_logs)
+
+        sync_to_block(chain, start, end)
 
         print(f'{chain["name"]} synced!')
 
