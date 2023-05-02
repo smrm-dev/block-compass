@@ -19,8 +19,13 @@ blocks_blueprint.add_url_rule('/blocks', view_func=Blocks.as_view('Blocks'))
 
 @blocks_blueprint.cli.command('sync')
 def sync():
-    ## TODO: synchronize database
-    return
+    chains = get_chains()
+    threads = []
+    for chain in chains:
+        thread = Thread(target=sync_chain, args=(current_app._get_current_object(), chain,), name=chain['name']) 
+        thread.start()
+        threads.append(thread)
+
 
 def monitor_chain(app, chain):
     with app.app_context():
