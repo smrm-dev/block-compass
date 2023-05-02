@@ -11,7 +11,8 @@ from flask import (
 
 
 from ..views import Blocks
-from ..db import get_chains, insert_block, save_monitor_log 
+from ..db import get_chains, insert_block, save_monitor_log, get_monitor_logs, get_sync_logs 
+
 
 blocks_blueprint = Blueprint('blocks', __name__)
 blocks_blueprint.add_url_rule('/blocks', view_func=Blocks.as_view('Blocks'))
@@ -66,6 +67,7 @@ def monitor_chain(app, chain):
                         print_exc()
                         sleep(1)
             sleep(chain['blockTime'])
+
 
 @blocks_blueprint.cli.command('monitor')
 def monitor():

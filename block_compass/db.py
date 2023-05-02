@@ -17,15 +17,28 @@ def get_db():
 # Use LocalProxy to read the global db instance with just `db`
 db = LocalProxy(get_db)
 
+
 def init_db():
     return
 
+
+def get_sync_logs(chain_id):
+    result = db.syncLogs.findOne({'chainId': chain_id})
+    return result
+
+
+def get_monitor_logs(chain_id):
+    result = db.monitorLogs.find({'chainId': chain_id})
+    return list(result)
+
+
 def save_monitor_log(start_time, block_number, chain_id):
-    db.logs.update_one(
+    db.monitorLogs.update_one(
         filter= { 'startTime': start_time },
-        update= { '$set': {'toBlock': block_number, 'chainId': chain_id }},
+        update= { '$set': { 'toBlock': block_number, 'chainId': chain_id } },
         upsert= True
     )
+
 
 def insert_block(block, chain_id):
     db.blocks.insert_one({
@@ -34,9 +47,11 @@ def insert_block(block, chain_id):
         'chainId': chain_id,
     })
 
+
 def get_chains():
     result = db.chains.find()
     return list(result)
+
 
 def get_block_by_timestamp(timestamp, chain_id):
     result = db.blocks.find_one_or_404({'timestamp': {'$lte': timestamp}, 'chainId': chain_id}, projection={'_id' : False}) 
