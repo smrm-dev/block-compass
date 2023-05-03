@@ -48,6 +48,10 @@ def save_monitor_log(start_time, block_number, chain_id):
     )
 
 
+def delete_monitor_log(log_id):
+    db.monitorLogs.delete_one({'_id': log_id})
+
+
 def insert_block(block, chain_id):
     db.blocks.insert_one({
         'number': block['number'],

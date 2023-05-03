@@ -11,11 +11,36 @@ from flask import (
 
 
 from ..views import Blocks
-from ..db import get_chains, insert_block, save_monitor_log, get_monitor_logs, get_sync_logs, save_sync_log 
+from ..db import (
+     get_chains, get_monitor_logs, get_sync_logs,
+     insert_block, save_monitor_log, save_sync_log,
+     delete_monitor_log,
+)
 
 
 blocks_blueprint = Blueprint('blocks', __name__)
 blocks_blueprint.add_url_rule('/blocks', view_func=Blocks.as_view('Blocks'))
+
+
+def find_gaps(monitor_logs):
+    gaps = []
+    for sequent_logs in zip(monitor_logs[:-1], monitor_logs[1:]):
+        gaps.append((sequent_logs[0]['toBlock'] + 1, sequent_logs[1]['toBlock'] - sequent_logs[1]['numBlocks'] + 1, sequent_logs[1]['_id']))    
+    
+    return gaps
+
+
+def sync_to_block(chain, start, end, log_id = None):
+    w3 = Web3(Web3.HTTPProvider(chain['rpc']))
+
+    for block_number in range(start, end):
+        block = w3.eth.get_block(block_number)
+        insert_block(block, chain['id'])
+        save_sync_log(block_number, chain['id'])
+
+    if log_id:
+        delete_monitor_log(log_id)
+
 
 def sync_chain(app, chain):
     with app.app_context():
