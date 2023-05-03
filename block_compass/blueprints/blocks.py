@@ -32,12 +32,15 @@ def sync_chain(app, chain):
 
         if monitor_logs == []:
             end = w3.eth.get_block_number()
-            sync_to_block(chain, start, end)
+            sync_to_block(chain, start, end + 1)
         else:
             first_log = monitor_logs[0]
             end = first_log['toBlock'] - first_log['numBlocks'] + 1
-            sync_to_block(chain, start, end)
-            sync_gaps(chain, monitor_logs)
+            gaps = [(start, end, first_log['_id'])]
+            gaps += find_gaps(monitor_logs)
+            print(chain['name'], gaps)
+            for gap in gaps:
+                sync_to_block(chain, start=gap[0], end=gap[1], log_id=gap[2])
 
         print(f'{chain["name"]} synced!')
 
