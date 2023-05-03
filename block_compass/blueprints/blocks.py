@@ -31,13 +31,13 @@ def sync_chain(app, chain):
             start = 0
 
         if monitor_logs == []:
-            end = latest_block = w3.eth.get_block_number
+            end = w3.eth.get_block_number()
+            sync_to_block(chain, start, end)
         else:
             first_log = monitor_logs[0]
             end = first_log['toBlock'] - first_log['numBlocks'] + 1
-            sync_gaps(monitor_logs)
-
-        sync_to_block(chain, start, end)
+            sync_to_block(chain, start, end)
+            sync_gaps(chain, monitor_logs)
 
         print(f'{chain["name"]} synced!')
 
