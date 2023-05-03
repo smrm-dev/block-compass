@@ -22,8 +22,16 @@ def init_db():
     return
 
 
+def save_sync_log(block_number, chain_id):
+    db.syncLogs.update_one(
+        filter= {'chainId': chain_id},
+        update= { '$set': { 'toBlock': block_number } },
+        upsert= True
+    )
+
+
 def get_sync_logs(chain_id):
-    result = db.syncLogs.findOne({'chainId': chain_id})
+    result = db.syncLogs.find_one({'chainId': chain_id})
     return result
 
 
@@ -35,7 +43,7 @@ def get_monitor_logs(chain_id):
 def save_monitor_log(start_time, block_number, chain_id):
     db.monitorLogs.update_one(
         filter= { 'startTime': start_time },
-        update= { '$set': { 'toBlock': block_number, 'chainId': chain_id } },
+        update= { '$set': { 'toBlock': block_number, 'chainId': chain_id }, '$inc': {'numBlocks': 1} },
         upsert= True
     )
 

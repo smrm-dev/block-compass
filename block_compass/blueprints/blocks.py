@@ -11,7 +11,7 @@ from flask import (
 
 
 from ..views import Blocks
-from ..db import get_chains, insert_block, save_monitor_log, get_monitor_logs, get_sync_logs 
+from ..db import get_chains, insert_block, save_monitor_log, get_monitor_logs, get_sync_logs, save_sync_log 
 
 
 blocks_blueprint = Blueprint('blocks', __name__)
