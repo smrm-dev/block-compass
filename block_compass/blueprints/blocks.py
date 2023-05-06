@@ -1,7 +1,4 @@
-from threading import Thread
 from time import sleep
-from traceback import print_exc
-from datetime import datetime
 
 
 from web3 import Web3 
@@ -14,8 +11,6 @@ from ..views import Blocks
 from ..utils import SyncThread, MonitorThread
 from ..db import (
      get_chains,
-     insert_block,
-     save_monitor_log,
 )
 
 

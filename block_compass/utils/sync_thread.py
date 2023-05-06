@@ -1,18 +1,13 @@
 from threading import Thread
-from time import sleep
-from traceback import print_exc
-from datetime import datetime
 
 
 from web3 import Web3
 
 
 from ..db import (
-    get_chains,
     get_monitor_logs,
     get_last_synced_block,
     insert_block,
-    save_monitor_log,
     save_sync_log,
 )
 
@@ -57,7 +52,6 @@ class SyncThread(Thread):
                 first_gap_end = first_log['toBlock'] - first_log['numBlocks'] + 1
                 gaps = [(start, first_gap_end)]
                 gaps += self.__find_gaps(monitor_logs)
-                print(chain["name"], gaps, '\n')
                 for gap in gaps:
                     self.__sync_to_block(chain, start=gap[0], end=gap[1])
                 save_sync_log(monitor_logs[-1]['toBlock'], chain['id'])
