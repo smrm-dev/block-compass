@@ -29,14 +29,17 @@ def save_sync_log(block_number, chain_id):
         upsert= True
     )
 
+def get_last_synced_block(chain_id):
+    result = db.syncLogs.find_one({'chainId': chain_id})
+    return -1 if result == None else result["toBlock"]
 
 def get_sync_logs(chain_id):
     result = db.syncLogs.find_one({'chainId': chain_id})
     return result
 
 
-def get_monitor_logs(chain_id):
-    result = db.monitorLogs.find({'chainId': chain_id})
+def get_monitor_logs(block_number, chain_id):
+    result = db.monitorLogs.find({'chainId': chain_id, 'toBlock': {'$gt': block_number}})
     return list(result)
 
 
@@ -46,11 +49,6 @@ def save_monitor_log(start_time, block_number, chain_id):
         update= { '$set': { 'toBlock': block_number, 'chainId': chain_id }, '$inc': {'numBlocks': 1} },
         upsert= True
     )
-
-
-def delete_monitor_log(log_id):
-    db.monitorLogs.delete_one({'_id': log_id})
-
 
 def insert_block(block, chain_id):
     db.blocks.insert_one({
