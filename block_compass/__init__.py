@@ -5,6 +5,7 @@ from flask import Flask
 from flask.cli import FlaskGroup
 
 from .config import env_config
+from .db import init_db
 
 def create_app(config='development'):
     # create and configure the app
@@ -13,6 +14,8 @@ def create_app(config='development'):
 
     from .blueprints import blocks_blueprint  
     app.register_blueprint(blocks_blueprint)
+
+    init_db(app)
 
     return app
 

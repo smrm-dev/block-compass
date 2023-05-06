@@ -1,6 +1,6 @@
 from flask import current_app, g
 from werkzeug.local import LocalProxy
-from flask_pymongo import PyMongo
+from flask_pymongo import PyMongo, DESCENDING, ASCENDING
 
 def get_db():
     """
@@ -18,8 +18,10 @@ def get_db():
 db = LocalProxy(get_db)
 
 
-def init_db():
-    return
+def init_db(app):
+    with app.app_context():
+        db.blocks.create_index([('timestamp', DESCENDING), ('number', DESCENDING), ('chainId', ASCENDING)])
+        db.monitorLogs.create_index([('toBlock', ASCENDING), ('chainId', ASCENDING)])
 
 
 def save_sync_log(block_number, chain_id):
