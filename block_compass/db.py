@@ -31,9 +31,9 @@ def save_sync_log(block_number, chain_id):
         upsert= True
     )
 
-def get_last_synced_block(chain_id):
+def get_sync_log(chain_id):
     result = db.syncLogs.find_one({'chainId': chain_id})
-    return -1 if result == None else result["toBlock"]
+    return (True, [], -1) if result == None else (result['finished'], result['gaps'], result["toBlock"])
 
 def get_sync_logs(chain_id):
     result = db.syncLogs.find_one({'chainId': chain_id})

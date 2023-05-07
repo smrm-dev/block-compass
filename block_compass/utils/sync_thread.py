@@ -1,4 +1,5 @@
 from threading import Thread
+from functools import reduce
 
 
 from web3 import Web3
@@ -6,7 +7,7 @@ from web3 import Web3
 
 from ..db import (
     get_monitor_logs,
-    get_last_synced_block,
+    get_sync_log,
     insert_block,
     save_sync_log,
 )
@@ -19,10 +20,18 @@ class SyncThread(Thread):
         self.last_synced_block = None
         Thread.__init__(self, name=name)
 
-    def __find_gaps(self, monitor_logs):
-        gaps = []
-        for sequent_logs in zip(monitor_logs[:-1], monitor_logs[1:]):
-            gaps.append((sequent_logs[0]['toBlock'] + 1, sequent_logs[1]['toBlock'] - sequent_logs[1]['numBlocks'] + 1))    
+    def __find_gaps(self, start, monitor_logs, chain):
+        if monitor_logs == []:
+            w3 = Web3(Web3.HTTPProvider(chain['rpc']))
+            end = w3.eth.get_block_number()
+            return [(start, end + 1)]
+        else:
+            first_log = monitor_logs[0]
+            first_gap_end = first_log['toBlock'] - first_log['numBlocks'] + 1
+            gaps = [(start, first_gap_end)]
+
+            for sequent_logs in zip(monitor_logs[:-1], monitor_logs[1:]):
+                gaps.append((sequent_logs[0]['toBlock'] + 1, sequent_logs[1]['toBlock'] - sequent_logs[1]['numBlocks'] + 1))    
         
         return gaps
 
@@ -36,25 +45,24 @@ class SyncThread(Thread):
             self.last_synced_block = block_number
 
     def __sync_chain(self, app, chain):
+
         with app.app_context():
-            last_synced_block = get_last_synced_block(chain["id"])
+
+            (finished, sync_log_gaps, last_synced_block) = get_sync_log(chain['id'])
+
             start = last_synced_block + 1
 
             monitor_logs = get_monitor_logs(last_synced_block, chain['id'])
 
             w3 = Web3(Web3.HTTPProvider(chain['rpc']))
 
-            if monitor_logs == []:
-                end = w3.eth.get_block_number()
-                self.__sync_to_block(chain, start, end + 1)
-            else:
-                first_log = monitor_logs[0]
-                first_gap_end = first_log['toBlock'] - first_log['numBlocks'] + 1
-                gaps = [(start, first_gap_end)]
-                gaps += self.__find_gaps(monitor_logs)
-                for gap in gaps:
-                    self.__sync_to_block(chain, start=gap[0], end=gap[1])
-                save_sync_log(monitor_logs[-1]['toBlock'], chain['id'])
+            gaps = []
+            if not finished:
+                gaps += sync_log_gaps
+
+            gaps += self.__find_gaps(start, monitor_logs, chain)
+
+            self.__sync_blocks_in_chunks(gaps, chain)
 
             print(f'{chain["name"]} synced!')
 
