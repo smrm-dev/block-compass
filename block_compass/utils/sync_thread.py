@@ -1,24 +1,23 @@
 from threading import Thread
-from functools import reduce
 
 
 from web3 import Web3
+from flask import current_app
 
 
 from ..db import (
     get_monitor_logs,
     get_sync_log,
-    insert_block,
     save_sync_log,
     update_sync_log,
 )
+from .chunk_thread import ChunkThread
 
 
 class SyncThread(Thread):
     def __init__(self, app, chain, name):
         self.app = app
         self.chain = chain
-        self.last_synced_block = None
         self.threads = []
         Thread.__init__(self, name=name)
 
@@ -45,19 +44,6 @@ class SyncThread(Thread):
         
         return gaps
 
-    def __sync_to_block(self, chain, start, end):
-        w3 = Web3(Web3.HTTPProvider(chain['rpc']))
-
-        for block_number in range(start, end):
-            block = w3.eth.get_block(block_number)
-            insert_block(block, chain['id'])
-            save_sync_log(block_number, chain['id'])
-            self.last_synced_block = block_number
-    
-    def __sync_chunk(self, rpc, chunk, chain):
-        #TODO: implement
-        print(chain['name'], rpc, chunk)
-
     def __sync_blocks_in_chunks(self, gaps, chain):
         def split_gap(gap, chunk_free_space):
             split_point = gap[0] + chunk_free_space
@@ -70,6 +56,7 @@ class SyncThread(Thread):
         num_chain_rpcs = 3 
         chain_rpcs = ['1', '2', '3']
 
+        #TODO: manage sync processes with a few number of blocks 
         average_chunk_size = (num_blocks_to_sync // num_chain_rpcs) + 1
 
         chunks = {api_key: [] for api_key in chain_rpcs}
@@ -100,10 +87,10 @@ class SyncThread(Thread):
 
         update_sync_log(chain['id'], list(chunks.values()), to_block)
         for chain_rpc in chain_rpcs:
-            thread = Thread(target=self.__sync_chunk, args=(chain_rpc, chunks[chain_rpc], chain,))
+            thread = ChunkThread(current_app._get_current_object(), chain_rpc, chunks[chain_rpc], chain) 
             thread.start()
             self.threads.append(thread)
-
+        
         for thread in self.threads:
             thread.join()
 
