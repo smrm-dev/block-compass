@@ -10,6 +10,7 @@ from ..db import (
     get_sync_log,
     insert_block,
     save_sync_log,
+    update_sync_log,
 )
 
 
@@ -62,6 +63,7 @@ class SyncThread(Thread):
             split_point = gap[0] + chunk_free_space
             return [(gap[0], split_point, chunk_free_space), (split_point, gap[1], gap[2] - chunk_free_space)] 
         
+        to_block = gaps[-1][1] - 1
         num_blocks_to_sync = sum([gap[2] for gap in gaps])
 
         # TODO: should fetch chain rpcs 
@@ -96,7 +98,7 @@ class SyncThread(Thread):
             chunks[chain_rpc] = { 'gaps':chunk_gaps, 'chainId': chain['id'] }
             gaps = gaps[last_index + 1:]
 
-        #TODO: update sync log 
+        update_sync_log(chain['id'], list(chunks.values()), to_block)
         for chain_rpc in chain_rpcs:
             thread = Thread(target=self.__sync_chunk, args=(chain_rpc, chunks[chain_rpc], chain,))
             thread.start()
@@ -130,6 +132,7 @@ class SyncThread(Thread):
             print(chain['name'], gaps)
             self.__sync_blocks_in_chunks(gaps, chain)
 
+            #TODO:  set sync log finished field as True
             print(f'{chain["name"]} synced!')
 
     def run(self):

@@ -23,6 +23,15 @@ def init_db(app):
         db.blocks.create_index([('timestamp', DESCENDING), ('number', DESCENDING), ('chainId', ASCENDING)])
         db.monitorLogs.create_index([('toBlock', ASCENDING), ('chainId', ASCENDING)])
 
+def update_sync_log(chain_id, chunks, to_block):
+    db.syncLogs.update_one(
+        filter= { 'chainId': chain_id },
+        update= { '$set': { 'toBlock': to_block, 'finished': False } },
+        upsert= True
+    )
+
+    db.chunkLogs.delete_many({'chainId': chain_id})
+    db.chunkLogs.insert_many(chunks)
 
 def save_sync_log(block_number, chain_id):
     db.syncLogs.update_one(
@@ -33,7 +42,13 @@ def save_sync_log(block_number, chain_id):
 
 def get_sync_log(chain_id):
     result = db.syncLogs.find_one({'chainId': chain_id})
-    return (True, [], -1) if result == None else (result['finished'], result['gaps'], result["toBlock"])
+    if result == None:
+        return (True, [], -1)
+    chunks = db.chunkLogs.find({'chainId': chain_id})
+    gaps = []
+    for chunk in chunks:
+        gaps += chunk['gaps']
+    return result['finished'], gaps, result["toBlock"]
 
 def get_sync_logs(chain_id):
     result = db.syncLogs.find_one({'chainId': chain_id})
