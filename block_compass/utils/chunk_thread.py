@@ -8,15 +8,16 @@ from ..db import (
 )
 
 class ChunkThread(Thread):
-    def __init__(self, app, rpc, chunk, chain):
+    def __init__(self, app, rpc, chunk, chain, pb):
         self.app = app
         self.rpc = rpc
         self.chunk = chunk
         self.chain = chain
+        self.pb = pb
         Thread.__init__(self)
 
     def __sync_to_block(self, w3, chain_id, chunk_id, start, end):
-        for block_number in range(start, end):
+        for block_number in self.pb(range(start, end)):
             block = w3.eth.get_block(block_number)
             insert_block(block, chain_id)
             update_chunk_log(chunk_id)

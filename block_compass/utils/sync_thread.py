@@ -15,10 +15,11 @@ from .chunk_thread import ChunkThread
 
 
 class SyncThread(Thread):
-    def __init__(self, app, chain, name):
+    def __init__(self, app, chain, name, pb):
         self.app = app
         self.chain = chain
         self.threads = []
+        self.pb = pb
         Thread.__init__(self, name=name)
 
     def __find_gaps(self, start, monitor_logs, chain):
@@ -87,12 +88,13 @@ class SyncThread(Thread):
 
         update_sync_log(chain['id'], list(chunks.values()), to_block)
         for chain_rpc in chain_rpcs:
-            thread = ChunkThread(current_app._get_current_object(), chain_rpc, chunks[chain_rpc], chain) 
+            thread = ChunkThread(current_app._get_current_object(), chain_rpc, chunks[chain_rpc], chain, self.pb) 
             thread.start()
             self.threads.append(thread)
         
         for thread in self.threads:
-            thread.join()
+            while thread.is_alive():
+                thread.join()
 
 
     def __sync_chain(self, app, chain):
