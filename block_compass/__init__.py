@@ -10,8 +10,9 @@ def create_app(config='development'):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(env_config[config])
 
-    from .blueprints import blocks_blueprint  
+    from .blueprints import blocks_blueprint, chains_blueprint
     app.register_blueprint(blocks_blueprint)
+    app.register_blueprint(chains_blueprint)
 
     init_db(app)
 
