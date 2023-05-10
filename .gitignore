@@ -14,3 +14,4 @@ build/
 *.egg-info/
 
 .vscode
+block_compass/static/chains.py

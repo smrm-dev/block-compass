@@ -20,6 +20,7 @@ db = LocalProxy(get_db)
 
 def init_db(app):
     with app.app_context():
+        db.chains.create_index([('id', ASCENDING)], unique=True)
         db.blocks.create_index([('timestamp', DESCENDING), ('number', DESCENDING), ('chainId', ASCENDING)])
         db.monitorLogs.create_index([('toBlock', ASCENDING), ('chainId', ASCENDING)])
 
@@ -97,6 +98,9 @@ def get_chains():
     result = db.chains.find()
     return list(result)
 
+def init_chains(chains):
+    db.chains.delete_many({})
+    db.chains.insert_many(chains)
 
 def get_block_by_timestamp(timestamp, chain_id):
     result = db.blocks.find_one_or_404({'timestamp': {'$lte': timestamp}, 'chainId': chain_id}, projection={'_id' : False}) 
