@@ -8,7 +8,6 @@ from flask import current_app
 from ..db import (
     get_monitor_logs,
     get_sync_log,
-    save_sync_log,
     update_sync_log,
     finalize_sync_log,
 )
@@ -116,7 +115,6 @@ class SyncThread(Thread):
                 print(f'{chain["name"]} has already synced!')
                 return
 
-            # print(chain['name'], gaps)
             self.__sync_blocks_in_chunks(gaps, chain)
 
             print(f'{chain["name"]} synced!')

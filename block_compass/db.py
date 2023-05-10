@@ -58,13 +58,6 @@ def update_sync_log(chain_id, chunks, to_block):
     db.chunkLogs.delete_many({'chainId': chain_id})
     db.chunkLogs.insert_many(chunks)
 
-def save_sync_log(block_number, chain_id):
-    db.syncLogs.update_one(
-        filter= {'chainId': chain_id},
-        update= { '$set': { 'toBlock': block_number } },
-        upsert= True
-    )
-
 def get_sync_log(chain_id):
     result = db.syncLogs.find_one({'chainId': chain_id})
     if result == None:

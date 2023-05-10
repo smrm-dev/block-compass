@@ -1,9 +1,8 @@
 from time import sleep
 
-
-from web3 import Web3 
 from flask import (
-    current_app, Blueprint, flash, g, redirect, render_template, request, session, url_for
+    current_app,
+    Blueprint,
 )
 from prompt_toolkit.shortcuts import ProgressBar
 
