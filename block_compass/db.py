@@ -23,6 +23,22 @@ def init_db(app):
         db.blocks.create_index([('timestamp', DESCENDING), ('number', DESCENDING), ('chainId', ASCENDING)])
         db.monitorLogs.create_index([('toBlock', ASCENDING), ('chainId', ASCENDING)])
 
+def update_chunk_log(chunk_id):
+    chunk_log = db.chunkLogs.find_one( filter= { '_id': chunk_id })
+
+    chunk_gaps = chunk_log['gaps']
+    current_gap = chunk_gaps[0]
+    current_gap = [current_gap[0] + 1, current_gap[1], current_gap[2] - 1]
+    if current_gap[2] == 0:
+        chunk_gaps = chunk_gaps[1:]
+    else:
+        chunk_gaps[0] = current_gap
+    
+    db.chunkLogs.update_one( 
+        filter= { '_id': chunk_id },
+        update= { '$set': { 'gaps': chunk_gaps } }
+    )
+
 def update_sync_log(chain_id, chunks, to_block):
     db.syncLogs.update_one(
         filter= { 'chainId': chain_id },
