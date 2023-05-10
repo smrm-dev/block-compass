@@ -25,7 +25,7 @@ class SyncThread(Thread):
 
     def __find_gaps(self, start, monitor_logs, chain):
         if monitor_logs == []:
-            w3 = Web3(Web3.HTTPProvider(chain['rpc']))
+            w3 = Web3(Web3.HTTPProvider(chain['rpcs'][0]))
             end = w3.eth.get_block_number()
             return [(start, end + 1, end - start + 1)]
         else:
@@ -54,14 +54,12 @@ class SyncThread(Thread):
         to_block = gaps[-1][1] - 1
         num_blocks_to_sync = sum([gap[2] for gap in gaps])
 
-        # TODO: should fetch chain rpcs 
-        num_chain_rpcs = 3 
-        chain_rpcs = ['1', '2', '3']
+        chain_rpcs = chain['rpcs'] 
 
         #TODO: manage sync processes with a few number of blocks 
-        average_chunk_size = (num_blocks_to_sync // num_chain_rpcs) + 1
+        average_chunk_size = (num_blocks_to_sync // len(chain_rpcs)) + 1
 
-        chunks = {api_key: [] for api_key in chain_rpcs}
+        chunks = {chain_rpc: [] for chain_rpc in chain_rpcs}
         for chain_rpc in chain_rpcs:
             chunk_gaps = []
             chunk_size = 0
@@ -109,8 +107,6 @@ class SyncThread(Thread):
 
             monitor_logs = get_monitor_logs(last_synced_block, chain['id'])
 
-            w3 = Web3(Web3.HTTPProvider(chain['rpc']))
-
             gaps = []
             if not finished:
                 gaps += sync_log_gaps
@@ -120,7 +116,7 @@ class SyncThread(Thread):
                 print(f'{chain["name"]} has already synced!')
                 return
 
-            print(chain['name'], gaps)
+            # print(chain['name'], gaps)
             self.__sync_blocks_in_chunks(gaps, chain)
 
             print(f'{chain["name"]} synced!')
