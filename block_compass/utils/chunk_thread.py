@@ -5,6 +5,7 @@ from web3 import Web3
 from ..db import (
     insert_block,
     update_chunk_log,
+    delete_chunk_log,
 )
 
 class ChunkThread(Thread):
@@ -27,7 +28,7 @@ class ChunkThread(Thread):
         for gap in chunk['gaps']:
             self.__sync_to_block(w3, chain['id'], chunk['_id'], start=gap[0], end=gap[1])
         
-        #TODO: remove chunk log
+        delete_chunk_log(chunk['_id'])
 
     def run(self):
         with self.app.app_context():

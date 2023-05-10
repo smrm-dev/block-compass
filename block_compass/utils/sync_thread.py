@@ -10,6 +10,7 @@ from ..db import (
     get_sync_log,
     save_sync_log,
     update_sync_log,
+    finalize_sync_log,
 )
 from .chunk_thread import ChunkThread
 
@@ -95,7 +96,8 @@ class SyncThread(Thread):
         for thread in self.threads:
             while thread.is_alive():
                 thread.join()
-
+        
+        finalize_sync_log(chain['id'])
 
     def __sync_chain(self, app, chain):
 
@@ -121,7 +123,6 @@ class SyncThread(Thread):
             print(chain['name'], gaps)
             self.__sync_blocks_in_chunks(gaps, chain)
 
-            #TODO:  set sync log finished field as True
             print(f'{chain["name"]} synced!')
 
     def run(self):

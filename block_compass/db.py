@@ -23,6 +23,9 @@ def init_db(app):
         db.blocks.create_index([('timestamp', DESCENDING), ('number', DESCENDING), ('chainId', ASCENDING)])
         db.monitorLogs.create_index([('toBlock', ASCENDING), ('chainId', ASCENDING)])
 
+def delete_chunk_log(chunk_id):
+    db.chunkLogs.delete_one({ '_id': chunk_id })
+
 def update_chunk_log(chunk_id):
     chunk_log = db.chunkLogs.find_one( filter= { '_id': chunk_id })
 
@@ -37,6 +40,12 @@ def update_chunk_log(chunk_id):
     db.chunkLogs.update_one( 
         filter= { '_id': chunk_id },
         update= { '$set': { 'gaps': chunk_gaps } }
+    )
+
+def finalize_sync_log(chain_id):
+    db.syncLogs.update_one(
+        filter= { 'chainId': chain_id },
+        update= { '$set': { 'finished': True } }
     )
 
 def update_sync_log(chain_id, chunks, to_block):
