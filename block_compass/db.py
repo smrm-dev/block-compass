@@ -110,4 +110,4 @@ def get_block_number_by_timestamp(timestamp, chain_id):
     result = db.blocks.find_one_or_404({'timestamp': {'$lte': timestamp}, 'chainId': chain_id}, projection={'_id' : False}) 
     if  timestamp - result['timestamp'] > chain['blockTime']:
         return 'NOT_SYNCED' 
-    return result
+    return result['number']
