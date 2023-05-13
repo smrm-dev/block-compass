@@ -102,6 +102,12 @@ def init_chains(chains):
     db.chains.delete_many({})
     db.chains.insert_many(chains)
 
-def get_block_by_timestamp(timestamp, chain_id):
+def get_genesis_block_timestamp(chain_id):
+    return db.blocks.find_one({'chainId': chain_id, 'number': 0})['timestamp']
+
+def get_block_number_by_timestamp(timestamp, chain_id):
+    chain = db.chains.find_one_or_404({'id': chain_id})
     result = db.blocks.find_one_or_404({'timestamp': {'$lte': timestamp}, 'chainId': chain_id}, projection={'_id' : False}) 
+    if  timestamp - result['timestamp'] > chain['blockTime']:
+        return 'NOT_SYNCED' 
     return result

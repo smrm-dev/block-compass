@@ -3,7 +3,7 @@ from flask import request, jsonify, json
 
 from traceback import print_exc
 
-from block_compass.db import get_block_by_timestamp, get_chains
+from block_compass.db import get_block_number_by_timestamp, get_chains, get_genesis_block_timestamp
 
 
 class Blocks(MethodView):
@@ -21,7 +21,10 @@ class Blocks(MethodView):
 
             blocks = {}
             for chain_id in chain_ids:
-                blocks[chain_id] = get_block_by_timestamp(timestamp, chain_id)['number']
+                if timestamp < get_genesis_block_timestamp(chain_id):
+                   blocks[chain_id] = 'TIMESTAMP_OUT_OF_RANGE' 
+                else:
+                    blocks[chain_id] = get_block_number_by_timestamp(timestamp, chain_id)
 
             return jsonify(success=True, blocks=blocks), 200
 
