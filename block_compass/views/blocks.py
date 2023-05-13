@@ -2,6 +2,7 @@ from flask.views import MethodView
 from flask import request, jsonify, json
 
 from traceback import print_exc
+from time import time
 
 from block_compass.db import get_block_number_by_timestamp, get_chains, get_genesis_block_timestamp
 
@@ -11,8 +12,13 @@ class Blocks(MethodView):
 
         try: 
             params = request.args.to_dict()
-            timestamp = int(params['timestamp'])
+            timestamp = params.get('timestamp')
             chain_ids = params.get('chain_ids')
+
+            if timestamp == None:
+                timestamp = int(time())
+            else:
+                timestamp = int(timestamp)
 
             if chain_ids is None:
                 chain_ids = [chain['id'] for chain in get_chains()]
