@@ -16,7 +16,7 @@ class Blocks(MethodView):
             chain_ids = params.get('chain_ids')
 
             if timestamp == None:
-                timestamp = int(time())
+                timestamp = int(time()) - 10
             else:
                 timestamp = int(timestamp)
 
@@ -32,7 +32,7 @@ class Blocks(MethodView):
                 else:
                     blocks[chain_id] = get_block_number_by_timestamp(timestamp, chain_id)
 
-            return jsonify(success=True, blocks=blocks), 200
+            return jsonify(success=True, blocks=blocks, timestamp=timestamp), 200
 
         except Exception as e:
             print_exc()
