@@ -69,9 +69,11 @@ def get_sync_log(chain_id):
         gaps += chunk['gaps']
     return result['finished'], gaps, result["toBlock"]
 
-def get_sync_logs(chain_id):
+def get_last_synced_block(chain_id):
     result = db.syncLogs.find_one({'chainId': chain_id})
-    return result
+    if result == None:
+        return -1
+    return result["toBlock"]
 
 
 def get_monitor_logs(block_number, chain_id):
