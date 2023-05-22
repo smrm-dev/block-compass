@@ -93,6 +93,9 @@ def insert_block(block, chain_id):
         'chainId': chain_id,
     })
 
+def get_chain(chain_id):
+    chain = db.chains.find_one_or_404({'id': chain_id})
+    return chain
 
 def get_chains():
     result = db.chains.find()

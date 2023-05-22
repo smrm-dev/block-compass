@@ -1,5 +1,6 @@
 from time import sleep
 
+import click
 from flask import (
     current_app,
     Blueprint,
@@ -8,15 +9,23 @@ from prompt_toolkit.shortcuts import ProgressBar
 
 
 from ..views import Blocks
-from ..utils import SyncThread, MonitorThread
+from ..utils import SyncThread, MonitorThread, AuditThread
 from ..db import (
-     get_chains,
+     get_chains, get_chain
 )
 
 
 blocks_blueprint = Blueprint('blocks', __name__)
 blocks_blueprint.add_url_rule('/blocks', view_func=Blocks.as_view('Blocks'))
 
+
+@blocks_blueprint.cli.command('audit')
+@click.argument('chain_id')
+def audit(chain_id):
+    chain = get_chain(chain_id) 
+    audit_thread = AuditThread(current_app._get_current_object(), chain, chain["name"])
+    audit_thread.start()
+    audit_thread.join()
 
 @blocks_blueprint.cli.command('sync')
 def sync():
