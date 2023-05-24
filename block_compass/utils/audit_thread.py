@@ -12,6 +12,24 @@ class AuditThread(Thread):
         self.chain = chain
         Thread.__init__(self, name=name)
 
+    def __audit_chunk(self, chain_id, lower_bound, upper_bound):
+        blocks_to_audit = [block['number'] for block in get_blocks_by_number(chain_id, lower_bound, upper_bound)]
+        expected_block_number = lower_bound
+        last_audited_block = -1
+        gaps = []
+        for current_block_number in blocks_to_audit:
+            if current_block_number != expected_block_number:
+                gaps.append((expected_block_number, current_block_number))
+                expected_block_number = current_block_number + 1
+            else:
+                expected_block_number += 1
+            last_audited_block = current_block_number
+        
+        if last_audited_block != upper_bound:
+            gaps.append((expected_block_number, upper_bound + 1))
+        
+        return gaps
+
     def __audit_blocks_in_chunks(self, chain_id, last_synced_block):
         def merge_or_return_gaps(gap_0, gap_1):
             if gap_0[1] == gap_1[0]:
