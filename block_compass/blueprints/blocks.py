@@ -21,8 +21,8 @@ blocks_blueprint.add_url_rule('/blocks', view_func=Blocks.as_view('Blocks'))
 
 @blocks_blueprint.cli.command('audit')
 @click.argument('chain_id')
-def audit(chain_id):
-    chain = get_chain(chain_id) 
+def audit(chain_id: int):
+    chain = get_chain(int(chain_id)) 
     audit_thread = AuditThread(current_app._get_current_object(), chain, chain["name"])
     audit_thread.start()
     audit_thread.join()
