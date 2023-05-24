@@ -110,6 +110,10 @@ def init_chains(chains):
 def get_genesis_block_timestamp(chain_id):
     return db.blocks.find_one({'chainId': chain_id, 'number': 0})['timestamp']
 
+def get_blocks_by_number(chain_id, start, end):
+    result = db.blocks.find({'chainId': chain_id, 'number': {'$gte': start, '$lte': end}}).sort('number', 1)
+    return result
+
 def get_block_number_by_timestamp(timestamp, chain_id):
     chain = db.chains.find_one_or_404({'id': chain_id})
     result = db.blocks.find_one_or_404({'timestamp': {'$lte': timestamp}, 'chainId': chain_id}, projection={'_id' : False}) 

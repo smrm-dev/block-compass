@@ -27,13 +27,27 @@ class AuditThread(Thread):
             for thread in threads:
                 while thread.is_alive():
                     thread.join()
+            
+            chunks = []
+            for thread in threads:
+                chunks.append(thread.gaps)
+            
+            return chunks
 
     def __audit_chain(self, chain):
             last_synced_block = get_last_synced_block(chain['id'])
             if last_synced_block == -1:
                 return
             
-            self.__audit_blocks_in_chunks(chain['id'], last_synced_block)
+            chunks = self.__audit_blocks_in_chunks(chain['id'], last_synced_block)
+
+            if chunks != []:
+                # update_chunks_log(chain_id, chunks)
+                print(chunks)
+                print('Missing Blocks')
+                pass
+            else:
+                print('All Right')
 
     def run(self):
         with self.app.app_context():
