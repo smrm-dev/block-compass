@@ -22,6 +22,7 @@ def init_db(app):
     with app.app_context():
         db.chains.create_index([('id', ASCENDING)], unique=True)
         db.blocks.create_index([('timestamp', DESCENDING), ('number', DESCENDING), ('chainId', ASCENDING)])
+        db.blocks.create_index([('number', DESCENDING), ('chainId', DESCENDING)])
         db.monitorLogs.create_index([('toBlock', ASCENDING), ('chainId', ASCENDING)])
 
 def delete_chunk_log(chunk_id):
