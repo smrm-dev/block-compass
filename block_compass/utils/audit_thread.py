@@ -30,7 +30,8 @@ class AuditThread(Thread):
             
             chunks = []
             for thread in threads:
-                chunks.append(thread.gaps)
+                if thread.gaps:
+                    chunks.append(thread.gaps)
             
             return chunks
 
