@@ -13,17 +13,17 @@ class AuditChunkThread(Thread):
         Thread.__init__(self)
 
     def __audit_chunk(self, chain_id, lower_bound, upper_bound):
-        blocks_to_audit = get_blocks_by_number(chain_id, lower_bound, upper_bound)
+        blocks_to_audit = [block['number'] for block in get_blocks_by_number(chain_id, lower_bound, upper_bound)]
         expected_block_number = lower_bound
         last_audited_block = -1
-        for block in blocks_to_audit:
-            current_block_number = block['number']
+        for i in self.pb(range(len(blocks_to_audit))):
+            current_block_number = blocks_to_audit[i]
             if current_block_number != expected_block_number:
                 self.gaps.append((expected_block_number, current_block_number))
                 expected_block_number = current_block_number + 1
             else:
                 expected_block_number += 1
-            last_audited_block = current_block_number 
+            last_audited_block = current_block_number
         
         if last_audited_block != upper_bound:
             self.gaps.append((expected_block_number, upper_bound + 1))
