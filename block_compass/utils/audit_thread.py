@@ -3,7 +3,7 @@ from threading import Thread
 from flask import current_app
 from prompt_toolkit.shortcuts import ProgressBar
 
-from ..db import get_last_synced_block, get_blocks_by_number 
+from ..db import get_last_synced_block, get_blocks_by_number, update_audit_result, update_sync_log
 
 class AuditThread(Thread):
     chunk_size = int(100e3)
@@ -49,17 +49,21 @@ class AuditThread(Thread):
                         gaps = gaps[:-1] + merge_or_return_gaps(gap_0, gap_1) + chunk_gaps[1:]
                     else:
                         gaps += chunk_gaps
-                    # update_audit_gaps(chain_id, gaps)
+                    update_audit_result(chain_id, gaps)
             return gaps
             
     def __audit_chain(self, chain):
-            last_synced_block = get_last_synced_block(chain['id'])
+            chain_id = chain['id']
+            last_synced_block = get_last_synced_block(chain_id)
             if last_synced_block == -1:
+                print('NO_BLOCK_FOUND')
                 return
             
             #TODO: should check for previous audit
             
-            gaps = self.__audit_blocks_in_chunks(chain['id'], last_synced_block)
+            gaps = self.__audit_blocks_in_chunks(chain_id, last_synced_block)
+
+            update_sync_log(chain_id, [{'gaps': gaps, 'chainId': chain_id}], last_synced_block)
 
             if gaps:
                 print(gaps)

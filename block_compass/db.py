@@ -25,6 +25,13 @@ def init_db(app):
         db.blocks.create_index([('number', DESCENDING), ('chainId', DESCENDING)])
         db.monitorLogs.create_index([('toBlock', ASCENDING), ('chainId', ASCENDING)])
 
+def update_audit_result(chain_id, gaps):
+    db.auditResult.update_one(
+        filter= {'chainId': chain_id},
+        update= {'$set': {'gaps': gaps}},
+        upsert= True
+    )
+
 def delete_chunk_log(chunk_id):
     db.chunkLogs.delete_one({ '_id': chunk_id })
 
