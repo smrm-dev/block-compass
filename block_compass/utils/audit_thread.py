@@ -19,21 +19,21 @@ class AuditThread(Thread):
         gaps = []
         for current_block_number in blocks_to_audit:
             if current_block_number != expected_block_number:
-                gaps.append((expected_block_number, current_block_number))
+                gaps.append((expected_block_number, current_block_number, current_block_number - expected_block_number))
                 expected_block_number = current_block_number + 1
             else:
                 expected_block_number += 1
             last_audited_block = current_block_number
         
         if last_audited_block != upper_bound:
-            gaps.append((expected_block_number, upper_bound + 1))
+            gaps.append((expected_block_number, upper_bound + 1, upper_bound + 1 - expected_block_number))
         
         return gaps
 
     def __audit_blocks_in_chunks(self, chain_id, last_synced_block):
         def merge_or_return_gaps(gap_0, gap_1):
             if gap_0[1] == gap_1[0]:
-                return [(gap_0[0], gap_1[1])]
+                return [(gap_0[0], gap_1[1], gap_1[1] - gap_0[0])]
             return [gap_0, gap_1] 
 
         with ProgressBar() as pb:
@@ -58,15 +58,12 @@ class AuditThread(Thread):
             if last_synced_block == -1:
                 print('NO_BLOCK_FOUND')
                 return
-            
-            #TODO: should check for previous audit
-            
+
             gaps = self.__audit_blocks_in_chunks(chain_id, last_synced_block)
 
             update_sync_log(chain_id, [{'gaps': gaps, 'chainId': chain_id}], last_synced_block)
 
             if gaps:
-                print(gaps)
                 print('Missing Blocks')
                 pass
             else:
