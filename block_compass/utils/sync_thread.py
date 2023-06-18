@@ -2,6 +2,7 @@ from threading import Thread
 
 
 from web3 import Web3
+from web3.middleware import geth_poa_middleware
 from flask import current_app
 
 
@@ -25,6 +26,7 @@ class SyncThread(Thread):
     def __find_gaps(self, start, monitor_logs, chain):
         if monitor_logs == []:
             w3 = Web3(Web3.HTTPProvider(chain['rpcs'][0]))
+            w3.middleware_onion.inject(geth_poa_middleware, layer=0)
             end = w3.eth.get_block_number()
             return [(start, end + 1, end - start + 1)]
         else:

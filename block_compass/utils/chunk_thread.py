@@ -1,6 +1,7 @@
 from threading import Thread
 
 from web3 import Web3
+from web3.middleware import geth_poa_middleware
 
 from ..db import (
     insert_block,
@@ -25,6 +26,7 @@ class ChunkThread(Thread):
     
     def __sync_chunk(self, rpc, chunk, chain):
         w3 = Web3(Web3.HTTPProvider(rpc))
+        w3.middleware_onion.inject(geth_poa_middleware, layer=0)
         for gap in chunk['gaps']:
             self.__sync_to_block(w3, chain['id'], chunk['_id'], start=gap[0], end=gap[1])
         
