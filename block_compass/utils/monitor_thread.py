@@ -5,6 +5,7 @@ from datetime import datetime
 
 
 from web3 import Web3 
+from web3.middleware import geth_poa_middleware
 
 
 from ..db import (
@@ -24,6 +25,7 @@ class MonitorThread(Thread):
         with app.app_context():
             start_time = datetime.now()
             w3 = Web3(Web3.HTTPProvider(chain['rpcs'][0]))
+            w3.middleware_onion.inject(geth_poa_middleware, layer=0)
             
             latest_block = w3.eth.get_block_number()
             latest_monitored_block = latest_block - 1
