@@ -18,6 +18,8 @@ class AuditThread(Thread):
         last_audited_block = -1
         gaps = []
         for current_block_number in blocks_to_audit:
+            if current_block_number == expected_block_number - 1:
+                continue
             if current_block_number != expected_block_number:
                 gaps.append((expected_block_number, current_block_number, current_block_number - expected_block_number))
                 expected_block_number = current_block_number + 1
