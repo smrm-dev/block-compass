@@ -28,8 +28,13 @@ def audit(chain_id: int):
     audit_thread.join()
 
 @blocks_blueprint.cli.command('sync')
-def sync():
-    chains = get_chains()
+@click.argument('chain_id')
+def sync(chain_id: int):
+    chain_id = int(chain_id)
+    if chain_id != 0:
+        chains = [get_chain(int(chain_id))]
+    else:
+        chains = get_chains()
     threads = []
     with ProgressBar() as pb:
         for chain in chains:
